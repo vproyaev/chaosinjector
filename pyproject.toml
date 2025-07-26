@@ -4,10 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "chaosinjector"
-version = "0.1.0"
+version = "0.2.0"
 authors = [{ name = "Vladislav Proyaev", email = "farmfilok@gmail.com" }]
-description = "Probabilistic proxy for injecting randomness into Python objects"
-readme = "README.md"
+description = "ChaosInjector: Probabilistic proxy library for injecting randomness and faults into Python objects. Supports chaos engineering, fault injection, stochastic simulations, A/B testing, and data privacy masking with type preservation."
+keywords = ["chaos engineering", "fault injection", "probabilistic proxy", "python testing library", "randomness injection", "stochastic simulation", "A/B testing python", "data anonymization", "performance sampling", "monte carlo python"]
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
