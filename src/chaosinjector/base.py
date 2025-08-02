@@ -1,8 +1,11 @@
-import copy
-import random
+from copy import deepcopy
 from functools import wraps
+from inspect import currentframe
+from inspect import iscoroutinefunction
+from random import random
 from typing import Any
 from typing import Callable
+from typing import Optional
 from typing import overload
 from typing import TypeVar
 
@@ -22,8 +25,8 @@ class ChaosInjector:
         cls,
         obj: T,
         probability: float = 0.5,
-        decider: Callable[[str], bool] | None = None,
-        method_probs: dict[str, float] | None = None,
+        decider: Optional[Callable[[str], bool]] = None,
+        method_probs: Optional[dict[str, float]] = None,
     ) -> T:
         return cls.__inject(
             obj=obj,
@@ -38,8 +41,8 @@ class ChaosInjector:
         cls,
         obj: T,
         probability: float = 0.5,
-        decider: Callable[[str], bool] | None = None,
-        method_probs: dict[str, float] | None = None,
+        decider: Optional[Callable[[str], bool]] = None,
+        method_probs: Optional[dict[str, float]] = None,
     ) -> None:
         return cls.__inject(
             obj=obj,
@@ -55,8 +58,8 @@ class ChaosInjector:
         cls,
         obj: T,
         probability: float = 0.5,
-        decider: Callable[[str], bool] | None = None,
-        method_probs: dict[str, float] | None = None,
+        decider: Optional[Callable[[str], bool]] = None,
+        method_probs: Optional[dict[str, float]] = None,
         return_class: bool = True,
     ) -> T:
         ...
@@ -67,8 +70,8 @@ class ChaosInjector:
         cls,
         obj: T,
         probability: float = 0.5,
-        decider: Callable[[str], bool] | None = None,
-        method_probs: dict[str, float] | None = None,
+        decider: Optional[Callable[[str], bool]] = None,
+        method_probs: Optional[dict[str, float]] = None,
         return_class: bool = False,
     ) -> None:
         ...
@@ -78,10 +81,10 @@ class ChaosInjector:
         cls,
         obj: T,
         probability: float = 0.5,
-        decider: Callable[[str], bool] | None = None,
-        method_probs: dict[str, float] | None = None,
+        decider: Optional[Callable[[str], bool]] = None,
+        method_probs: Optional[dict[str, float]] = None,
         return_class: bool = False,
-    ) -> T | None:
+    ) -> Optional[T]:
         cls.__validate_params(probability, method_probs)
         should_use_real = cls.__should_use_real(
             probability, decider, method_probs
@@ -98,7 +101,7 @@ class ChaosInjector:
             proxy_instance = ProxyCls.__new__(ProxyCls)
 
             if hasattr(obj, "__dict__"):
-                proxy_instance.__dict__ = copy.deepcopy(obj.__dict__)
+                proxy_instance.__dict__ = deepcopy(obj.__dict__)
             elif hasattr(obj.__class__, "__slots__"):
                 for slot in obj.__class__.__slots__:
                     setattr(proxy_instance, slot, getattr(obj, slot))
@@ -111,7 +114,7 @@ class ChaosInjector:
     @staticmethod
     def __validate_params(
         probability: float,
-        method_probs: dict[str, float] | None,
+        method_probs: Optional[dict[str, float]],
     ) -> None:
         if not (0 <= probability <= 1):
             raise ValueError(
@@ -133,30 +136,39 @@ class ChaosInjector:
     @staticmethod
     def __should_use_real(
         probability: float = 0.5,
-        decider: Callable[[str], bool] | None = None,
-        method_probs: dict[str, float] | None = None,
+        decider: Optional[Callable[[str], bool]] = None,
+        method_probs: Optional[dict[str, float]] = None,
     ) -> Callable[[str], bool]:
         def wrapper(name: str) -> bool:
             if decider:
                 return decider(name)
             if method_probs and name in method_probs:
-                return random.random() < method_probs[name]
-            return random.random() < probability
+                return random() < method_probs[name]
+            return random() < probability
 
         return wrapper
 
     @staticmethod
     def __handle(
         should_use_real: Callable[[str], bool],
-    ) -> Callable[[object, str], Any | None]:
+    ) -> Callable[[object, str], Optional[Any]]:
+
+        async def __async_stub() -> None:
+            pass
 
         @wraps(object.__getattribute__)
         def wrapper(self, name: str) -> Any:
             _attr = object.__getattribute__(self, name)
-            if should_use_real(name):
+            _f_name = currentframe().f_back.f_code.co_name
+            if (
+                should_use_real(name)
+                or (_f_name.startswith("__") and _f_name.endswith("__"))
+            ):
                 return _attr
 
-            if callable(_attr):
+            if iscoroutinefunction(_attr):
+                return lambda *args, **kwargs: __async_stub()
+            elif callable(_attr):
                 return lambda *args, **kwargs: None
             else:
                 return None

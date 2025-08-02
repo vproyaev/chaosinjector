@@ -11,6 +11,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - No changes yet. Contributions welcome for upcoming features like async support or custom no-op handlers.
 
+## [0.3.0] - 2025-08-02
+
+### Added
+- Support for asynchronous attributes: for coroutines in no-op mode, returns an awaitable stub that yields None after await to avoid crashes in async code (#11).
+- Bypass for attributes requested from dunder methods (caller co_name __*__) to prevent breaking internal operations of magic methods, such as __anext__ or __aenter__ (#12).
+- @wraps decorator on the wrapper in __handle to preserve __getattribute__ metadata.
+
+### Changed
+- Refactored __handle: added inspect.iscoroutinefunction check for handling async callables, with lambda returning __async_stub() instead of simple None (#13).
+- Updated wrapper logic to use inspect.currentframe() for bypassing chaos inside dunder callers, ensuring state stability (e.g., self.i in __anext__).
+
+### Fixed
+- Fixed potential incompatibility with async callables: previously, no-op for coroutines returned lambda: None, causing TypeError on await; now uses awaitable stub (#14).
+
+### Deprecated
+- None.
+
+### Removed
+- None, backward compatibility preserved.
+
+### Security
+- None.
+
 ## [0.2.0] - 2025-07-26
 
 ### Added

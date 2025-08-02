@@ -1,3 +1,4 @@
+import inspect
 from unittest.mock import patch
 
 import pytest
@@ -368,3 +369,62 @@ def test_create_proxy_no_mutation_original(chaos_injector):
     assert result is None
 
     assert obj.method() == "real_method_result"
+
+
+class TestAsyncClass:
+    async def async_method(self):
+        return "real_async_result"
+
+    def sync_method(self):
+        return "real_sync_result"
+
+
+@pytest.mark.asyncio
+async def test_inject_async_method_real(chaos_injector):
+    obj = TestAsyncClass()
+    chaos_injector.inject(obj, probability=1.0)
+    result = await obj.async_method()
+    assert result == "real_async_result"
+    assert inspect.iscoroutinefunction(obj.async_method)
+
+
+@pytest.mark.asyncio
+async def test_inject_async_method_noop(chaos_injector):
+    obj = TestAsyncClass()
+    chaos_injector.inject(obj, probability=0.0)
+    fake_coro = obj.async_method()
+    assert inspect.iscoroutine(fake_coro)
+    result = await fake_coro
+    assert result is None
+    assert obj.sync_method() is None
+
+
+@pytest.mark.asyncio
+async def test_create_proxy_async_method_real(chaos_injector):
+    obj = TestAsyncClass()
+    proxy_obj = chaos_injector.create_proxy(obj, probability=1.0)
+    assert isinstance(proxy_obj, TestAsyncClass)
+    result = await proxy_obj.async_method()
+    assert result == "real_async_result"
+
+
+@pytest.mark.asyncio
+async def test_create_proxy_async_method_noop(chaos_injector):
+    obj = TestAsyncClass()
+    proxy_obj = chaos_injector.create_proxy(obj, probability=0.0)
+    assert isinstance(proxy_obj, TestAsyncClass)
+    fake_coro = proxy_obj.async_method()
+    assert inspect.iscoroutine(fake_coro)
+    result = await fake_coro
+    assert result is None
+    original_result = await obj.async_method()
+    assert original_result == "real_async_result"
+
+
+@pytest.mark.asyncio
+async def test_mixed_sync_async_noop(chaos_injector):
+    obj = TestAsyncClass()
+    chaos_injector.inject(obj, probability=0.0)
+    fake_async = obj.async_method()
+    assert await fake_async is None
+    assert obj.sync_method() is None

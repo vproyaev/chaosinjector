@@ -11,6 +11,29 @@
 
 - Пока нет изменений. Приветствуются вклады для будущих функций, таких как поддержка async или кастомные no-op handlers.
 
+## [0.3.0] - 2025-08-02
+
+### Added
+- Поддержка асинхронных атрибутов: для coroutines в no-op возвращается awaitable stub, возвращающий None после await, чтобы избежать крашей в async-коде (#11).
+- Bypass для атрибутов, запрашиваемых из dunder-методов (caller co_name __*__), чтобы предотвратить ломку внутренних операций magic methods, таких как __anext__ или __aenter__ (#12).
+- Декоратор @wraps на wrapper в __handle для сохранения метаданных __getattribute__.
+
+### Changed
+- Рефакторинг __handle: добавлена проверка inspect.iscoroutinefunction для обработки async callable, с lambda возвращающей __async_stub() вместо простого None (#13).
+- Обновлена логика wrapper для использования inspect.currentframe() в обход хаоса внутри dunder-caller'ов, обеспечивая стабильность state (например, self.i в __anext__).
+
+### Fixed
+- Исправлена потенциальная несовместимость с async callable: ранее no-op для coroutines возвращал lambda: None, вызывая TypeError при await; теперь awaitable stub (#14).
+
+### Deprecated
+- Ничего.
+
+### Removed
+- Ничего, обратная совместимость сохранена.
+
+### Security
+- Ничего.
+
 ## [0.2.0] - 2025-07-26
 
 ### Добавлено

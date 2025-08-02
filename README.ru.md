@@ -2,6 +2,13 @@
 
 🇺🇸 [English](README.md) | 🇷🇺 [Русский](README.ru.md)
 
+### Community and Support
+
+📢 Присоединяйтесь к авторскому
+Telegram-каналу [@almost_it](https://t.me/almost_it) для insights по
+разработке на Python, обсуждений chaos engineering, обновлений библиотеки и
+закулисных мыслей об инновационных практиках кодирования.
+
 [![PyPI version](https://badge.fury.io/py/chaosinjector.svg)](https://badge.fury.io/py/chaosinjector)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -66,7 +73,7 @@ from chaosinjector import ChaosInjector
 logger = logging.getLogger("my_app")
 ChaosInjector.inject(
     logger, probability=0.1
-    )  # Только 10% шанс на выполнение логов
+)  # Только 10% шанс на выполнение логов
 
 logger.info("Этот лог может не записаться!")  # Неустойчиво по дизайну!
 ```
@@ -141,7 +148,7 @@ ChaosInjector.inject(session, probability=0.3)  # 70% шанс сбоя
 
 response = session.get(
     "https://api.example.com"
-    )  # Часто None – тестируйте ретраи!
+)  # Часто None – тестируйте ретраи!
 ```
 
 Или без мутации:
@@ -163,7 +170,7 @@ from chaosinjector import ChaosInjector
 tracer = trace.get_tracer(__name__)
 ChaosInjector.inject(
     tracer, probability=0.1
-    )  # Трассировка только в 10% случаев
+)  # Трассировка только в 10% случаев
 
 with tracer.start_as_current_span("operation"):  # Иногда no-op
     pass
@@ -175,7 +182,7 @@ with tracer.start_as_current_span("operation"):  # Иногда no-op
 chaos_tracer = ChaosInjector.create_proxy(tracer, probability=0.1)
 with chaos_tracer.start_as_current_span(
     "operation"
-    ):  # Flaky в прокси, оригинал intact
+):  # Flaky в прокси, оригинал intact
     pass
 ```
 
@@ -226,7 +233,7 @@ print(data.user_id)  # None – защищено!
 ```python
 chaos_data = ChaosInjector.create_proxy(
     data, decider=lambda name: name != "user_id"
-    )
+)
 print(chaos_data.user_id)  # None в прокси, оригинал нетронут
 ```
 

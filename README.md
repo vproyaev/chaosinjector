@@ -2,6 +2,12 @@
 
 🇺🇸 [English](README.md) | 🇷🇺 [Русский](README.ru.md)
 
+### Community and Support
+
+📢 Join the author's Telegram channel [@almost_it](https://t.me/almost_it) for
+insights on Python development, chaos engineering discussions, library updates,
+and behind-the-scenes thoughts on innovative coding practices.
+
 📄 [CHANGELOG](CHANGELOG.md)
 
 [![PyPI version](https://badge.fury.io/py/chaosinjector.svg)](https://badge.fury.io/py/chaosinjector)
